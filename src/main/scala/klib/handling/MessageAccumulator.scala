@@ -21,6 +21,8 @@ sealed trait MessageAccumulator[+E <: Message, +T] {
       f: T => MessageAccumulator[E2, T2]
   ): MessageAccumulator[E2, T2]
 
+  def forEach(f: T => Unit): Unit
+
   // =====| ... and you get these for free |=====
 
   def toOption: Option[T] =
@@ -85,6 +87,9 @@ object MessageAccumulator {
     override def map[T2](f: T => T2): MessageAccumulator[E, T2] =
       new Alive(msgs, f(value))
 
+    override def forEach(f: T => Unit): Unit =
+      f(value)
+
     override def flatMap[E2 >: E <: Message, T2](
         f: T => MessageAccumulator[E2, T2]
     ): MessageAccumulator[E2, T2] =
@@ -126,6 +131,9 @@ object MessageAccumulator {
         f: Nothing => MessageAccumulator[E2, T2]
     ): MessageAccumulator[E2, T2] =
       this
+
+    override def forEach(f: Nothing => Unit): Unit =
+      ()
 
     override def <<[E2 >: E <: Message](
         moreMessages: E2*
