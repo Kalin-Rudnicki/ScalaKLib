@@ -2,7 +2,7 @@ package klib.handling
 
 import scalaz.Scalaz._
 
-sealed trait MessageAccumulator[E <: Message, +T] {
+sealed trait MessageAccumulator[+E <: Message, +T] {
 
   import MessageAccumulator._
 
@@ -13,13 +13,13 @@ sealed trait MessageAccumulator[E <: Message, +T] {
   def messages: List[E] =
     msgs.reverse
 
-  def <<(moreMessages: E*): MessageAccumulator[E, T]
+  def <<[E2 >: E <: Message](moreMessages: E2*): MessageAccumulator[E2, T]
 
   def map[T2](f: T => T2): MessageAccumulator[E, T2]
 
-  def flatMap[T2](
-      f: T => MessageAccumulator[E, T2]
-  ): MessageAccumulator[E, T2]
+  def flatMap[E2 >: E <: Message, T2](
+      f: T => MessageAccumulator[E2, T2]
+  ): MessageAccumulator[E2, T2]
 
   def forEach(f: T => Unit): Unit
 
@@ -43,9 +43,9 @@ sealed trait MessageAccumulator[E <: Message, +T] {
   def <@>[T2](f: T => T2): MessageAccumulator[E, T2] =
     this.map(f)
 
-  def <#>[T2](
-      f: T => MessageAccumulator[E, T2]
-  ): MessageAccumulator[E, T2] =
+  def <#>[E2 >: E <: Message, T2](
+      f: T => MessageAccumulator[E2, T2]
+  ): MessageAccumulator[E2, T2] =
     this.flatMap(f)
 
 }
@@ -62,23 +62,25 @@ object MessageAccumulator {
     override def map[T2](f: T => T2): MessageAccumulator[E, T2] =
       new Alive(msgs, f(value))
 
+    override def flatMap[E2 >: E <: Message, T2](
+        f: T => MessageAccumulator[E2, T2]
+    ): MessageAccumulator[E2, T2] =
+      f(value) match {
+        case Alive(m, v) =>
+          new Alive[E2, T2](m ::: msgs, v)
+        case Dead(m) =>
+          new Dead[E2](m ::: msgs)
+      }
+
     override def forEach(f: T => Unit): Unit =
       f(value)
 
-    override def flatMap[T2](
-        f: T => MessageAccumulator[E, T2]
-    ): MessageAccumulator[E, T2] =
-      f(value) match {
-        case Alive(m, v) =>
-          new Alive[E, T2](m ::: msgs, v)
-        case Dead(m) =>
-          new Dead[E](m ::: msgs)
-      }
+    // =====|  |=====
 
-    override def <<(
-        moreMessages: E*
-    ): MessageAccumulator[E, T] =
-      new Alive[E, T](moreMessages.toList.reverse ::: msgs, value)
+    override def <<[E2 >: E <: Message](
+        moreMessages: E2*
+    ): MessageAccumulator[E2, T] =
+      new Alive[E2, T](moreMessages.toList.reverse ::: msgs, value)
 
     override def toString: String =
       s"Value($value)(${messages.mkString(", ")})"
@@ -102,18 +104,18 @@ object MessageAccumulator {
     override def map[T2](f: Nothing => T2): MessageAccumulator[E, T2] =
       this
 
-    override def flatMap[T2](
-        f: Nothing => MessageAccumulator[E, T2]
-    ): MessageAccumulator[E, T2] =
+    override def flatMap[E2 >: E <: Message, T2](
+        f: Nothing => MessageAccumulator[E2, T2]
+    ): MessageAccumulator[E2, T2] =
       this
 
     override def forEach(f: Nothing => Unit): Unit =
       ()
 
-    override def <<(
-        moreMessages: E*
-    ): MessageAccumulator[E, Nothing] =
-      new Dead[E](moreMessages.toList.reverse ::: msgs)
+    override def <<[E2 >: E <: Message](
+        moreMessages: E2*
+    ): MessageAccumulator[E2, Nothing] =
+      new Dead[E2](moreMessages.toList.reverse ::: msgs)
 
     override def toString: String =
       s"NoValue(${messages.mkString(", ")})"
