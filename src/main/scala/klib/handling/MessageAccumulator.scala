@@ -1,5 +1,7 @@
 package klib.handling
 
+import scala.language.implicitConversions
+
 import scalaz.Scalaz._
 
 sealed trait MessageAccumulator[+E <: Message, +T] {

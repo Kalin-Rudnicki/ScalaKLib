@@ -1,5 +1,7 @@
 package klib.handling
 
+import scala.language.implicitConversions
+
 import org.scalactic.source.Position
 
 import klib.handling.MessageAccumulator._
