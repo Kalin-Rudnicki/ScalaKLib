@@ -4,7 +4,12 @@ import klib.fp.order1.types._
 
 package object helpers {
 
+  // =====| Ops |=====
+
   class FunctorOps[F[_]: Functor, A](self: F[A]) {
+
+    def forEach(f: A => Unit): Unit =
+      implicitly[Functor[F]].forEach(f, self)
 
     def map[B](f: A => B): F[B] =
       implicitly[Functor[F]].map(f, self)

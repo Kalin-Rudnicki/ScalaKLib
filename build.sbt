@@ -5,6 +5,8 @@ libraryDependencies ++= List(
   "org.scalameta" %% "scalameta" % "4.3.10"
 )
 
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+
 name := "KLib"
 version := "0.1"
 scalaVersion := "2.13.2"

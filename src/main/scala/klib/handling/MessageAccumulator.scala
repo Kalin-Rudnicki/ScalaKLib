@@ -6,24 +6,12 @@ sealed trait MessageAccumulator[+E <: Message, +T] {
 
   import MessageAccumulator._
 
-  // =====| Implement these... |=====
-
   def msgs: List[E]
 
   def messages: List[E] =
     msgs.reverse
 
   def <<[E2 >: E <: Message](moreMessages: E2*): MessageAccumulator[E2, T]
-
-  def map[T2](f: T => T2): MessageAccumulator[E, T2]
-
-  def flatMap[E2 >: E <: Message, T2](
-      f: T => MessageAccumulator[E2, T2]
-  ): MessageAccumulator[E2, T2]
-
-  def forEach(f: T => Unit): Unit
-
-  // =====| ... and you get these for free |=====
 
   def toOption: Option[T] =
     this match {
@@ -40,47 +28,21 @@ sealed trait MessageAccumulator[+E <: Message, +T] {
     (sorted, toOption.flatMap(v => sorted.error.isEmpty.option(v)))
   }
 
-  def <@>[T2](f: T => T2): MessageAccumulator[E, T2] =
-    this.map(f)
-
-  def <#>[E2 >: E <: Message, T2](
-      f: T => MessageAccumulator[E2, T2]
-  ): MessageAccumulator[E2, T2] =
-    this.flatMap(f)
-
 }
 
 object MessageAccumulator {
 
-  // =====| Value |=====
+  // =====| Alive |=====
 
-  final class Alive[E <: Message, T] private[MessageAccumulator] (
-      val msgs: List[E],
-      private val value: T
+  final class Alive[E <: Message, T] private[klib] (
+      private val value: T,
+      val msgs: List[E]
   ) extends MessageAccumulator[E, T] {
-
-    override def map[T2](f: T => T2): MessageAccumulator[E, T2] =
-      new Alive(msgs, f(value))
-
-    override def flatMap[E2 >: E <: Message, T2](
-        f: T => MessageAccumulator[E2, T2]
-    ): MessageAccumulator[E2, T2] =
-      f(value) match {
-        case Alive(m, v) =>
-          new Alive[E2, T2](m ::: msgs, v)
-        case Dead(m) =>
-          new Dead[E2](m ::: msgs)
-      }
-
-    override def forEach(f: T => Unit): Unit =
-      f(value)
-
-    // =====|  |=====
 
     override def <<[E2 >: E <: Message](
         moreMessages: E2*
     ): MessageAccumulator[E2, T] =
-      new Alive[E2, T](moreMessages.toList.reverse ::: msgs, value)
+      new Alive[E2, T](value, moreMessages.toList.reverse ::: msgs)
 
     override def toString: String =
       s"Value($value)(${messages.mkString(", ")})"
@@ -90,27 +52,16 @@ object MessageAccumulator {
   object Alive {
 
     def apply[E <: Message, T](value: T, messages: E*): Alive[E, T] =
-      new Alive[E, T](messages.toList.reverse, value)
+      new Alive[E, T](value, messages.toList.reverse)
 
-    def unapply[E <: Message, T](a: Alive[E, T]): Option[(List[E], T)] =
-      (a.msgs, a.value).some
+    def unapply[E <: Message, T](self: Alive[E, T]): Option[(T, List[E])] =
+      (self.value, self.msgs).some
 
   }
 
-  // =====| NoValue |=====
+  // =====| Dead |=====
 
-  final class Dead[E <: Message] private[MessageAccumulator] (val msgs: List[E]) extends MessageAccumulator[E, Nothing] {
-
-    override def map[T2](f: Nothing => T2): MessageAccumulator[E, T2] =
-      this
-
-    override def flatMap[E2 >: E <: Message, T2](
-        f: Nothing => MessageAccumulator[E2, T2]
-    ): MessageAccumulator[E2, T2] =
-      this
-
-    override def forEach(f: Nothing => Unit): Unit =
-      ()
+  final class Dead[E <: Message] private[klib] (val msgs: List[E]) extends MessageAccumulator[E, Nothing] {
 
     override def <<[E2 >: E <: Message](
         moreMessages: E2*
@@ -127,8 +78,8 @@ object MessageAccumulator {
     def apply[E <: Message](m0: E, messages: E*): Dead[E] =
       new Dead[E]((m0 :: messages.toList).reverse)
 
-    def unapply[E <: Message](a: Dead[E]): Option[List[E]] =
-      a.msgs.some
+    def unapply[E <: Message](self: Dead[E]): Option[List[E]] =
+      self.msgs.some
 
   }
 
@@ -169,5 +120,7 @@ object MessageAccumulator {
       warning: List[E],
       error: List[E]
   )
+
+  // =====| Monad |=====
 
 }
