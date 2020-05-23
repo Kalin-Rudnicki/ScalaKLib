@@ -12,7 +12,7 @@ object instances {
 
   implicit val optionMonad: Monad[Option] = new Monad[Option] {
 
-    override def forEach[A](f: A => Unit, self: Option[A]): Unit =
+    override def forEach[A](self: Option[A])(f: A => Unit): Unit =
       self match {
         case None =>
           ()
@@ -20,7 +20,7 @@ object instances {
           f(_self)
       }
 
-    override def map[A, B](f: A => B, self: Option[A]): Option[B] =
+    override def map[A, B](self: Option[A])(f: A => B): Option[B] =
       self match {
         case None =>
           None
@@ -31,7 +31,7 @@ object instances {
     override def lift[A](self: A): Option[A] =
       Some(self)
 
-    override def apply[A, B](f: Option[A => B], self: Option[A]): Option[B] =
+    override def apply[A, B](self: Option[A])(f: Option[A => B]): Option[B] =
       (f, self) match {
         case (None, _) =>
           None
@@ -55,7 +55,7 @@ object instances {
 
   implicit val listMonad: Monad[List] = new Monad[List] {
 
-    override def forEach[A](f: A => Unit, self: List[A]): Unit = {
+    override def forEach[A](self: List[A])(f: A => Unit): Unit = {
       @tailrec
       def loop(list: List[A]): Unit =
         list match {
@@ -69,7 +69,7 @@ object instances {
       loop(self)
     }
 
-    override def map[A, B](f: A => B, self: List[A]): List[B] = {
+    override def map[A, B](self: List[A])(f: A => B): List[B] = {
       @tailrec
       def loop(_self: List[A], prev: List[B]): List[B] =
         _self match {
@@ -85,7 +85,7 @@ object instances {
     override def lift[A](self: A): List[A] =
       List(self)
 
-    override def apply[A, B](f: List[A => B], self: List[A]): List[B] = {
+    override def apply[A, B](self: List[A])(f: List[A => B]): List[B] = {
       @tailrec
       def loop(_f: List[A => B], _self: List[A], prev: List[B]): List[B] =
         _f match {
@@ -127,12 +127,34 @@ object instances {
 
     // TODO (KR) : Write ops
     @tailrec
-    override def fold[A, B](self: List[A], _0: B, join: (A, B) => B): B =
+    override def fold[A, B](self: List[A], _0: B)(join: (A, B) => B): B =
       self match {
         case Nil =>
           _0
         case head :: tail =>
-          fold(tail, join(head, _0), join)
+          fold(tail, join(head, _0))(join)
+      }
+
+  }
+
+  implicit val listZeroAdd: ZeroAdd[List] = new ZeroAdd[List] {
+
+    override def _0[A]: List[A] = Nil
+
+    override def add[A](self: List[A], that: A): List[A] =
+      that :: self
+
+  }
+
+  implicit val listReversible: Reversible[List] = new Reversible[List] {
+
+    @tailrec
+    override def reverse[A](next: List[A], prev: List[A]): List[A] =
+      next match {
+        case Nil =>
+          prev
+        case head :: tail =>
+          reverse(tail, head :: prev)
       }
 
   }
@@ -142,7 +164,7 @@ object instances {
   implicit def messageAccumulatorMonad[E <: Message]: Monad[MessageAccumulator[E, ?]] =
     new Monad[MessageAccumulator[E, *]] {
 
-      override def forEach[A](f: A => Unit, self: MessageAccumulator[E, A]): Unit =
+      override def forEach[A](self: MessageAccumulator[E, A])(f: A => Unit): Unit =
         self match {
           case _: Dead[E] =>
             ()
@@ -150,7 +172,7 @@ object instances {
             f(value)
         }
 
-      override def map[A, B](f: A => B, self: MessageAccumulator[E, A]): MessageAccumulator[E, B] =
+      override def map[A, B](self: MessageAccumulator[E, A])(f: A => B): MessageAccumulator[E, B] =
         self match {
           case dead: Dead[E] =>
             dead
@@ -161,7 +183,7 @@ object instances {
       override def lift[A](self: A): MessageAccumulator[E, A] =
         new Alive(self, Nil)
 
-      override def apply[A, B](f: MessageAccumulator[E, A => B], self: MessageAccumulator[E, A]): MessageAccumulator[E, B] =
+      override def apply[A, B](self: MessageAccumulator[E, A])(f: MessageAccumulator[E, A => B]): MessageAccumulator[E, B] =
         f match {
           case Dead(_fMsgs) =>
             self match {

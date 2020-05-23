@@ -2,8 +2,8 @@ package klib.fp.typeclass
 
 trait Functor[F[_]] {
 
-  def forEach[A](f: A => Unit, self: F[A]): Unit
+  def forEach[A](self: F[A])(f: A => Unit): Unit
 
-  def map[A, B](f: A => B, self: F[A]): F[B]
+  def map[A, B](self: F[A])(f: A => B): F[B]
 
 }

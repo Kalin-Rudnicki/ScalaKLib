@@ -2,6 +2,8 @@ package klib.handling
 
 import scalaz.Scalaz._
 
+import klib.fp.typeclass._
+
 sealed trait MessageAccumulator[+E <: Message, +T] {
 
   import MessageAccumulator._
@@ -120,14 +122,5 @@ object MessageAccumulator {
       warning: List[E],
       error: List[E]
   )
-
-  // =====| MessageAccumulatorOps |=====
-
-  implicit class MessageAccumulatorOpsAlive[A](self: A) {
-
-    def alive[E <: Message]: MessageAccumulator[E, A] =
-      new Alive[E, A](self, Nil)
-
-  }
 
 }

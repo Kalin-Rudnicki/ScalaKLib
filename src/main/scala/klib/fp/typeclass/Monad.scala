@@ -4,10 +4,10 @@ trait Monad[F[_]] extends Applicative[F] {
 
   def flatten[A](self: F[F[A]]): F[A]
 
-  def flatMap[A, B](f: A => F[B], self: F[A]): F[B] =
-    flatten(map(f, self))
+  def flatMap[A, B](self: F[A])(f: A => F[B]): F[B] =
+    flatten(map(self)(f))
 
-  def flatApply[A, B](f: F[A => F[B]], self: F[A]): F[B] =
-    flatten(apply(f, self))
+  def flatApply[A, B](self: F[A])(f: F[A => F[B]]): F[B] =
+    flatten(apply(self)(f))
 
 }
