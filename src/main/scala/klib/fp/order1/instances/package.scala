@@ -3,6 +3,7 @@ package klib.fp.order1
 import scala.annotation.tailrec
 
 import klib.fp.order1.types._
+import klib.handling.Message
 import klib.handling.MessageAccumulator
 import klib.handling.MessageAccumulator._
 
@@ -119,7 +120,7 @@ package object instances {
 
   }
 
-  implicit def messageAccumulatorMonad[E]: Monad[MessageAccumulator[E, *]] =
+  implicit def messageAccumulatorMonad[E <: Message]: Monad[MessageAccumulator[E, ?]] =
     new Monad[MessageAccumulator[E, *]] {
 
       override def forEach[A](f: A => Unit, self: MessageAccumulator[E, A]): Unit =

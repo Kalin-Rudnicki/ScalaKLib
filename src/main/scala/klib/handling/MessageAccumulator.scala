@@ -15,8 +15,8 @@ sealed trait MessageAccumulator[+E <: Message, +T] {
 
   def toOption: Option[T] =
     this match {
-      case Alive(_, v) =>
-        v.some
+      case Alive(value, _) =>
+        value.some
       case _ =>
         None
     }
