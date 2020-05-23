@@ -121,6 +121,13 @@ object MessageAccumulator {
       error: List[E]
   )
 
-  // =====| Monad |=====
+  // =====| MessageAccumulatorOps |=====
+
+  implicit class MessageAccumulatorOpsAlive[A](self: A) {
+
+    def alive[E <: Message]: MessageAccumulator[E, A] =
+      new Alive[E, A](self, Nil)
+
+  }
 
 }

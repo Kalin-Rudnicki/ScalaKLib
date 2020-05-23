@@ -1,4 +1,4 @@
-package klib.fp
+package klib.fp.typeclass
 
 trait Functor[F[_]] {
 

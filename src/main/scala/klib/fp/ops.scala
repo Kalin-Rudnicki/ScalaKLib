@@ -1,6 +1,8 @@
 package klib.fp
 
-object Ops {
+import klib.fp.typeclass._
+
+object ops {
 
   implicit class FunctorOps[F[_]: Functor, A](self: F[A]) {
 
@@ -15,7 +17,7 @@ object Ops {
 
   }
 
-  implicit class ToApplyOps[A](self: A) {
+  implicit class ToApplicativeOps[A](self: A) {
 
     def lift[F[_]: Applicative]: F[A] =
       implicitly[Applicative[F]].lift(self)
@@ -25,7 +27,7 @@ object Ops {
 
   }
 
-  implicit class ApplyOps[F[_]: Applicative, A, B](f: F[A => B]) {
+  implicit class ApplicativeOps[F[_]: Applicative, A, B](f: F[A => B]) {
 
     def apply(self: F[A]): F[B] =
       implicitly[Applicative[F]].apply(f, self)
@@ -35,7 +37,7 @@ object Ops {
 
   }
 
-  implicit class ApplyOpsFlipped[F[_]: Applicative, A](self: F[A]) {
+  implicit class ApplicativeOpsFlipped[F[_]: Applicative, A](self: F[A]) {
 
     def applyTo[B](f: F[A => B]): F[B] =
       implicitly[Applicative[F]].apply(f, self)
@@ -45,7 +47,7 @@ object Ops {
 
   }
 
-  implicit class MonadOps_ApplyFlipped[F[_]: Monad, A](self: F[A]) {
+  implicit class MonadOps_ApplicativeFlipped[F[_]: Monad, A](self: F[A]) {
 
     def flatMap[B](f: A => F[B]): F[B] =
       implicitly[Monad[F]].flatMap(f, self)
@@ -61,13 +63,20 @@ object Ops {
 
   }
 
-  implicit class FlatApplyOps[F[_]: Monad, A, B](f: F[A => F[B]]) {
+  implicit class FlatApplicativeOps[F[_]: Monad, A, B](f: F[A => F[B]]) {
 
     def flatApply(self: F[A]): F[B] =
       implicitly[Monad[F]].flatApply(f, self)
 
     def <**<(self: F[A]): F[B] =
       flatApply(self)
+
+  }
+
+  implicit class FoldOps[F[_]: Foldable, A](self: F[A]) {
+
+    def foldO[B](_0: B)(join: (A, B) => B): B =
+      implicitly[Foldable[F]].fold(self, _0, join)
 
   }
 

@@ -1,4 +1,4 @@
-package klib.fp
+package klib.fp.typeclass
 
 trait Applicative[F[_]] extends Functor[F] {
 

@@ -2,10 +2,11 @@ package klib.fp
 
 import scala.annotation.tailrec
 
-import klib.handling._
+import klib.fp.typeclass._
 import klib.handling.MessageAccumulator._
+import klib.handling._
 
-object Instances {
+object instances {
 
   // =====| Option |=====
 
@@ -119,6 +120,20 @@ object Instances {
 
       loop(self, Nil)
     }
+
+  }
+
+  implicit val listFoldable: Foldable[List] = new Foldable[List] {
+
+    // TODO (KR) : Write ops
+    @tailrec
+    override def fold[A, B](self: List[A], _0: B, join: (A, B) => B): B =
+      self match {
+        case Nil =>
+          _0
+        case head :: tail =>
+          fold(tail, join(head, _0), join)
+      }
 
   }
 

@@ -1,4 +1,4 @@
-package klib.fp
+package klib.fp.typeclass
 
 trait Monad[F[_]] extends Applicative[F] {
 
