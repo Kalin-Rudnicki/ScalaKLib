@@ -1,13 +1,13 @@
-package klib.fp.order1
+package klib.fp
 
 import scala.annotation.tailrec
 
-import klib.fp.order1.types._
-import klib.handling.Message
-import klib.handling.MessageAccumulator
+import klib.handling._
 import klib.handling.MessageAccumulator._
 
-package object instances {
+object Instances {
+
+  // =====| Option |=====
 
   implicit val optionMonad: Monad[Option] = new Monad[Option] {
 
@@ -49,6 +49,8 @@ package object instances {
       }
 
   }
+
+  // =====| List |=====
 
   implicit val listMonad: Monad[List] = new Monad[List] {
 
@@ -119,6 +121,8 @@ package object instances {
     }
 
   }
+
+  // =====| MessageAccumulator |=====
 
   implicit def messageAccumulatorMonad[E <: Message]: Monad[MessageAccumulator[E, ?]] =
     new Monad[MessageAccumulator[E, *]] {
