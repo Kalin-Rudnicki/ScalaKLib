@@ -2,9 +2,9 @@ package klib
 
 import org.scalactic.source.Position
 
-import klib.handling.MessageAccumulator._
 import klib.fp.instances._
 import klib.fp.ops._
+import klib.handling.MessageAccumulator._
 import klib.handling._
 
 object Test {

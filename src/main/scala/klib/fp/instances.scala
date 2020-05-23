@@ -159,6 +159,41 @@ object instances {
 
   }
 
+  // =====| Map |=====
+
+  implicit def mapFunctor[K]: Functor[Map[K, ?]] =
+    new Functor[Map[K, *]] {
+
+      override def forEach[A](self: Map[K, A])(f: A => Unit): Unit = {
+        @tailrec
+        def loop(next: List[A]): Unit =
+          next match {
+            case Nil =>
+              ()
+            case head :: tail =>
+              f(head)
+              loop(tail)
+          }
+
+        // TODO (KR) : Optimize?
+        loop(self.values.toList)
+      }
+
+      override def map[A, B](self: Map[K, A])(f: A => B): Map[K, B] = {
+        @tailrec
+        def loop(next: List[(K, A)], prev: List[(K, B)]): Map[K, B] =
+          next match {
+            case Nil =>
+              prev.toMap
+            case head :: tail =>
+              loop(tail, (head._1, f(head._2)) :: prev)
+          }
+
+        loop(self.toList, Nil)
+      }
+
+    }
+
   // =====| MessageAccumulator |=====
 
   implicit def messageAccumulatorMonad[E <: Message]: Monad[MessageAccumulator[E, ?]] =
