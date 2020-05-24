@@ -119,17 +119,23 @@ object ops {
       monadG: Monad[G]
   ) {
 
+    class RecursiveBreakFunction(val gfa: G[F[A]]) {
+
+      private val funct: G[A => F[A]] =
+        monadG.map(gfa)((fa: F[A]) => (a: A) => zeroAddF.add(fa, a))
+
+      def apply(ga: G[A]): RecursiveBreakFunction =
+        new RecursiveBreakFunction(monadG.apply(ga)(funct))
+
+    }
+
     def invert: G[F[A]] =
-      foldableF.fold[G[A], G[F[A]]](
-        self,
-        monadG.lift(zeroAddF._0)
-      ) { (a, b) =>
-        monadG.flatMap[F[A], F[A]](b) { _b =>
-          monadG.flatMap[A, F[A]](a) { _a =>
-            monadG.lift(zeroAddF.add(_b, _a))
-          }
-        }
-      }
+      foldableF
+        .fold[G[A], RecursiveBreakFunction](
+          self,
+          new RecursiveBreakFunction(monadG.lift(zeroAddF._0))
+        )((ga, rbf) => rbf(ga))
+        .gfa
 
     def _invert: G[F[A]] =
       invert
