@@ -12,5 +12,5 @@ lazy val root = project
         "org.scalactic" %% "scalactic" % "3.1.1",
         "org.scalatest" %% "scalatest" % "3.1.1" % "test",
         "org.scalameta" %% "scalameta" % "4.3.10"
-      ).map(_.withDottyCompat(scalaVersion.value))
+      ).map(_.withDottyCompat(scalaVersion.value)),
   )
