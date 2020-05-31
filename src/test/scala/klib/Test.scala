@@ -39,24 +39,6 @@ object Test {
   def child(name: String)(implicit parent: Parent): Unit =
     parent.addChild(name)
 
-  def main(args: Array[String]): Unit = {
-
-    parent { implicit _p1 =>
-      // ...
-
-      child("child-1")
-
-      parent { implicit _p2 =>
-        // ...
-
-        // child("child-2")
-
-      }
-
-      child("child-3")
-
-    }
-
-  }
+  def main(args: Array[String]): Unit = {}
 
 }

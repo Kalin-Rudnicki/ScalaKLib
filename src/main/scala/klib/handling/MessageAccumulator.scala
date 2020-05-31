@@ -1,8 +1,7 @@
 package klib.handling
 
-import scalaz.Scalaz._
-
-import klib.fp.typeclass._
+import scalaz.Scalaz.ToBooleanOpsFromBoolean
+import scalaz.Scalaz.ToOptionIdOps
 
 sealed trait MessageAccumulator[+E <: Message, +T] {
 
@@ -56,7 +55,7 @@ object MessageAccumulator {
 
   object Alive {
 
-    def apply[E <: Message, T](value: T, messages: E*): Alive[E, T] =
+    def apply[E <: Message, T](value: T, messages: E*): MessageAccumulator[E, T] =
       new Alive[E, T](value, messages.toList.reverse)
 
     def unapply[E <: Message, T](self: Alive[E, T]): Option[(T, List[E])] =
@@ -80,7 +79,7 @@ object MessageAccumulator {
 
   object Dead {
 
-    def apply[E <: Message](m0: E, messages: E*): Dead[E] =
+    def apply[E <: Message](m0: E, messages: E*): MessageAccumulator[E, Nothing] =
       new Dead[E]((m0 :: messages.toList).reverse)
 
     def unapply[E <: Message](self: Dead[E]): Option[List[E]] =

@@ -2,7 +2,7 @@ package klib.fp
 
 import klib.fp.typeclass._
 
-object ops {
+trait ops {
 
   implicit class FunctorOps[F[_]: Functor, A](self: F[A]) {
 
@@ -144,3 +144,5 @@ object ops {
   }
 
 }
+
+object ops extends ops

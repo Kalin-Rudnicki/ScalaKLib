@@ -6,7 +6,7 @@ import klib.fp.typeclass._
 import klib.handling.MessageAccumulator._
 import klib.handling._
 
-object instances {
+trait instances {
 
   // =====| Option |=====
 
@@ -252,3 +252,5 @@ object instances {
     }
 
 }
+
+object instances extends instances
