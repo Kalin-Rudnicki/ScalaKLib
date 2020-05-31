@@ -6,11 +6,11 @@ import klib.fp.typeclass._
 import klib.handling.MessageAccumulator._
 import klib.handling._
 
-trait instances {
+object instances {
 
   // =====| Option |=====
 
-  implicit val optionMonad: Monad[Option] = new Monad[Option] {
+  given Monad[Option] {
 
     override def forEach[A](self: Option[A])(f: A => Unit): Unit =
       self match {
@@ -53,7 +53,7 @@ trait instances {
 
   // =====| List |=====
 
-  implicit val listMonad: Monad[List] = new Monad[List] {
+  given Monad[List] {
 
     override def forEach[A](self: List[A])(f: A => Unit): Unit = {
       @tailrec
@@ -123,7 +123,7 @@ trait instances {
 
   }
 
-  implicit val listFoldable: Foldable[List] = new Foldable[List] {
+  given Foldable[List] {
 
     // TODO (KR) : Write ops
     @tailrec
@@ -137,7 +137,7 @@ trait instances {
 
   }
 
-  implicit val listZeroAdd: ZeroAdd[List] = new ZeroAdd[List] {
+  given ZeroAdd[List] {
 
     override def _0[A]: List[A] = Nil
 
@@ -146,7 +146,7 @@ trait instances {
 
   }
 
-  implicit val listReversible: Reversible[List] = new Reversible[List] {
+  given Reversible[List] {
 
     @tailrec
     override def reverse[A](next: List[A], prev: List[A]): List[A] =
@@ -194,8 +194,6 @@ trait instances {
     }
 
   // =====| MessageAccumulator |=====
-  
-  
   
   given [E <: Message] as Monad[[X] =>> MessageAccumulator[E, X]] {
 
@@ -252,5 +250,3 @@ trait instances {
     }
 
 }
-
-object instances extends instances

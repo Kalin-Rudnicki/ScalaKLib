@@ -2,8 +2,19 @@ package klib.fp
 
 import klib.fp.typeclass._
 
-trait ops {
-
+object ops {
+  
+  // TODO (KR) : Test example
+  
+  extension ex on [F[_]: Functor, A](self: F[A]) {
+    
+    def test: Unit =
+      println(self)
+    
+  }
+  
+  // TODO (KR) : Old syntax that I would like to replace
+  
   implicit class FunctorOps[F[_]: Functor, A](self: F[A]) {
 
     def forEach(f: A => Unit): Unit =
@@ -144,5 +155,3 @@ trait ops {
   }
 
 }
-
-object ops extends ops
