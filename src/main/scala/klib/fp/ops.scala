@@ -4,50 +4,47 @@ import klib.fp.typeclass._
 
 object ops {
   
-  // TODO (KR) : Test example
-  
-  extension ex on [F[_]: Functor, A](self: F[A]) {
-    
-    def test: Unit =
-      println(self)
-    
-  }
+  export FunctorOpsB.{given _}
   
   // TODO (KR) : Old syntax that I would like to replace
   
-  implicit class FunctorOps[F[_]: Functor, A](self: F[A]) {
+  extension FunctorOps on [F[_]: Functor, A](self: F[A]) {
 
     def forEach(f: A => Unit): Unit =
-      implicitly[Functor[F]].forEach(self)(f)
+      summon[Functor[F]].forEach(self)(f)
 
     def _forEach(f: A => Unit): Unit =
       forEach(f)
 
-    def map[B](f: A => B): F[B] =
-      implicitly[Functor[F]].map(self)(f)
-
-    def _map[B](f: A => B): F[B] =
+  }
+  
+  extension FunctorOpsB on [F[_]: Functor, A, B](self: F[A]) {
+    
+    def map(f: A => B): F[B] =
+      summon[Functor[F]].map(self)(f)
+    
+    def _map(f: A => B): F[B] =
       map(f)
-
-    def >#>[B](f: A => B): F[B] =
+    
+    def >#>(f: A => B): F[B] =
       map(f)
-
+    
   }
 
   implicit class ToApplicativeOps[A](self: A) {
 
     def lift[F[_]: Applicative]: F[A] =
-      implicitly[Applicative[F]].lift(self)
+      summon[Applicative[F]].lift(self)
 
     def _lift[F[_]: Applicative]: F[A] =
       lift
 
-    def ^[F[_]: Applicative]: F[A] =
+    def ^[F[_]: Applicative] : F[A] =
       lift
 
   }
 
-  implicit class ApplicativeOps[F[_]: Applicative, A, B](f: F[A => B]) {
+  extension ApplicativeOps on [F[_]: Applicative, A, B](f: F[A => B]) {
 
     def apply(self: F[A]): F[B] =
       implicitly[Applicative[F]].apply(self)(f)
@@ -60,42 +57,42 @@ object ops {
 
   }
 
-  implicit class ApplicativeOpsFlipped[F[_]: Applicative, A](self: F[A]) {
+  extension ApplicativeOpsFlipped on [F[_]: Applicative, A, B](self: F[A]) {
 
-    def applyTo[B](f: F[A => B]): F[B] =
+    def applyTo(f: F[A => B]): F[B] =
       implicitly[Applicative[F]].apply(self)(f)
 
-    def _applyTo[B](f: F[A => B]): F[B] =
+    def _applyTo(f: F[A => B]): F[B] =
       applyTo(f)
 
-    def >*>[B](f: F[A => B]): F[B] =
+    def >*>(f: F[A => B]): F[B] =
       applyTo(f)
 
   }
 
-  implicit class MonadOps_ApplicativeFlipped[F[_]: Monad, A](self: F[A]) {
+  extension MonadOps_ApplicativeFlipped on [F[_]: Monad, A, B](self: F[A]) {
 
-    def flatMap[B](f: A => F[B]): F[B] =
+    def flatMap(f: A => F[B]): F[B] =
       implicitly[Monad[F]].flatMap(self)(f)
 
-    def _flatMap[B](f: A => F[B]): F[B] =
+    def _flatMap(f: A => F[B]): F[B] =
       flatMap(f)
 
-    def flatApplyTo[B](f: F[A => F[B]]): F[B] =
+    def flatApplyTo(f: F[A => F[B]]): F[B] =
       implicitly[Monad[F]].flatApply(self)(f)
 
-    def _flatApplyTo[B](f: F[A => F[B]]): F[B] =
+    def _flatApplyTo(f: F[A => F[B]]): F[B] =
       flatApplyTo(f)
 
-    def >##>[B](f: A => F[B]): F[B] =
+    def >##>(f: A => F[B]): F[B] =
       flatMap(f)
 
-    def >**>[B](f: F[A => F[B]]): F[B] =
+    def >**>(f: F[A => F[B]]): F[B] =
       flatApplyTo(f)
 
   }
 
-  implicit class FlatApplicativeOps[F[_]: Monad, A, B](f: F[A => F[B]]) {
+  extension FlatApplicativeOps on [F[_]: Monad, A, B](f: F[A => F[B]]) {
 
     def flatApply(self: F[A]): F[B] =
       implicitly[Monad[F]].flatApply(self)(f)
@@ -108,12 +105,12 @@ object ops {
 
   }
 
-  implicit class FoldOps[F[_]: Foldable, A](self: F[A]) {
+  extension FoldOps on [F[_]: Foldable, A, B](self: F[A]) {
 
-    def fold[B](_0: B)(join: (A, B) => B): B =
+    def fold(_0: B)(join: (A, B) => B): B =
       implicitly[Foldable[F]].fold(self, _0)(join)
 
-    def _fold[B](_0: B)(join: (A, B) => B): B =
+    def _fold(_0: B)(join: (A, B) => B): B =
       fold(_0)(join)
 
   }

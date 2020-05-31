@@ -1,13 +1,14 @@
 package klib
 
-import klib.core._
-import klib.core.{given _}
+import klib.fp.instances.{given _}
+import klib.fp.ops.{given _}
 
 object Test {
 
   def main(args: Array[String]): Unit = {
     
-    Some(5).test
+    List(1, 2, 3)._map(_ + 4)
+    val o: Option[Int] = 4.lift
     
   }
 
