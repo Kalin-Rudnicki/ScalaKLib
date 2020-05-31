@@ -2,9 +2,6 @@ package klib
 
 import org.scalactic.source.Position
 
-import klib.fp.instances._
-import klib.fp.ops._
-import klib.handling.MessageAccumulator._
 import klib.handling._
 
 object Test {
@@ -16,69 +13,49 @@ object Test {
 
   }
 
-  case class Ex(message: String)(implicit val pos: Position) extends Msg
+  case class Err(message: String)(implicit val pos: Position) extends Msg
 
   type ??[T] = MessageAccumulator[Msg, T]
 
+  class Parent {
+    import scala.collection.mutable.{ListBuffer => MList}
+
+    val children: MList[String] = MList()
+
+    def addChild(name: String): Unit =
+      children.append(name)
+
+    def dump: Unit =
+      println(children.toList)
+
+  }
+
+  def parent(f: Parent => Unit): Parent = {
+    val p: Parent = new Parent
+    f(p)
+    p
+  }
+
+  def child(name: String)(implicit parent: Parent): Unit =
+    parent.addChild(name)
+
   def main(args: Array[String]): Unit = {
 
-    val res0: List[Option[Int]] =
-      List(
-        1._lift[Option],
-        2._lift[Option],
-        3._lift[Option]
-      )
-    val res1: List[Option[Int]] =
-      List(
-        1._lift[Option],
-        2._lift[Option],
-        None
-      )
+    parent { implicit _p1 =>
+      // ...
 
-    println(res0)
-    println(res0.invert)
-    println(res0.invertR)
-    println
+      child("child-1")
 
-    println(res1)
-    println(res1.invert)
-    println(res1.invertR)
+      parent { implicit _p2 =>
+        // ...
 
-    val res2: List[??[Int]] =
-      List(
-        1._lift[??],
-        2._lift[??],
-        3._lift[??]
-      )
+        // child("child-2")
 
-    val res3: List[??[Int]] =
-      List(
-        Alive(1, Ex("'1'")),
-        Alive(2, Ex("'2'")),
-        Alive(3, Ex("'3'"))
-      )
+      }
 
-    val res4: List[??[Int]] =
-      List(
-        Alive(1, Ex("'1'")),
-        Alive(2, Ex("'2'")),
-        Dead(Ex("'3'"))
-      )
+      child("child-3")
 
-    println(res2)
-    println(res2.invert)
-    println(res2.invertR)
-    println
-
-    println(res3)
-    println(res3.invert)
-    println(res3.invertR)
-    println
-
-    println(res4)
-    println(res4.invert)
-    println(res4.invertR)
-    println
+    }
 
   }
 

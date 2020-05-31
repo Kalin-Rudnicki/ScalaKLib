@@ -46,6 +46,9 @@ object MessageAccumulator {
     ): MessageAccumulator[E2, T] =
       new Alive[E2, T](value, moreMessages.toList.reverse ::: msgs)
 
+    def kill(msg: E, msgs: E*): MessageAccumulator[E, Nothing] =
+      new Dead[E](msg :: msgs.toList ::: this.msgs)
+
     override def toString: String =
       s"Value($value)(${messages.mkString(", ")})"
 

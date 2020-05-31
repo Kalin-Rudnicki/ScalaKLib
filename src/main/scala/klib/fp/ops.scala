@@ -109,24 +109,24 @@ object ops {
 
   implicit class InvertOps[
       F[_]: Foldable: ZeroAdd,
-      G[_]: Monad,
+      G[_]: Applicative,
       A
   ](
       self: F[G[A]]
   )(implicit
       foldableF: Foldable[F],
       zeroAddF: ZeroAdd[F],
-      monadG: Monad[G]
+      applyG: Applicative[G]
   ) {
 
     def invert: G[F[A]] =
       foldableF
         .fold[G[A], G[F[A]]](
           self,
-          monadG.lift(zeroAddF._0)
+          applyG.lift(zeroAddF._0)
         ) { (ga, gfa) =>
-          monadG.apply(ga) {
-            monadG.map[F[A], A => F[A]](gfa) { (fa: F[A]) => (a: A) =>
+          applyG.apply(ga) {
+            applyG.map[F[A], A => F[A]](gfa) { (fa: F[A]) => (a: A) =>
               zeroAddF.add(fa, a)
             }
           }
@@ -136,7 +136,7 @@ object ops {
       invert
 
     def invertR(implicit reversible: Reversible[F]): G[F[A]] =
-      monadG.map[F[A], F[A]](invert)(i => implicitly[Reversible[F]].reverse(i, zeroAddF._0))
+      applyG.map[F[A], F[A]](invert)(i => implicitly[Reversible[F]].reverse(i, zeroAddF._0))
 
     def _invertR(implicit reversible: Reversible[F]): G[F[A]] =
       invertR
