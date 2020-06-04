@@ -8,8 +8,22 @@ import klib.handling._
 
 object instances {
 
+  // =====| Boolean |=====
+  
   // =====| Option |=====
 
+  given FoldableOnce[Option] {
+    
+    def fold[A, B](self: Option[A])(present: A => B)(missing: => B): B =
+      self match {
+        case None =>
+          missing
+        case Some(value) =>
+          present(value)
+      }
+    
+  }
+  
   given Monad[Option] {
 
     override def forEach[A](self: Option[A])(f: A => Unit): Unit =

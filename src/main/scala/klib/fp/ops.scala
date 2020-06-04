@@ -105,6 +105,13 @@ object ops {
 
   }
 
+  extension FoldOnceOps on [F[_]: FoldableOnce, A, B](self: F[A]) {
+    
+    def fold(present: A => B)(missing: => B): B =
+      summon[FoldableOnce[F]].fold(self)(present)(missing)
+    
+  }
+  
   extension FoldOps on [F[_]: Foldable, A, B](self: F[A]) {
 
     def fold(_0: B)(join: (A, B) => B): B =
